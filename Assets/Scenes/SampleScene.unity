@@ -413,7 +413,10 @@ MonoBehaviour:
   - {fileID: 8979450387177971987, guid: d3f50b45d83332b4086b92282b0f6219, type: 3}
   - {fileID: 2882840627675507281, guid: 9a3f684cfbaea90419d875afdac86268, type: 3}
   - {fileID: 4205566792496478950, guid: 5ae14134991b97b4d90c82387fb5373a, type: 3}
-  fruitObject: {fileID: 0}
+  fruitObject: {fileID: 1359635811}
+  destroyFruitList: []
+  selectedFruit: {fileID: 0}
+  isSwapping: 0
 --- !u!4 &1359635813
 Transform:
   m_ObjectHideFlags: 0
