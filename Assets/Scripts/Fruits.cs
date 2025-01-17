@@ -18,8 +18,7 @@ public class Fruits : MonoBehaviour
     public int xPos;
     public int yPos;
 
-    private Vector2 curPos;
-    private Vector2 targetPos;
+    public bool isMatched;
 
     public Fruits(int xPosition, int yPosition)
     {
@@ -32,4 +31,6 @@ public class Fruits : MonoBehaviour
         xPos = xPosition;
         yPos = yPosition;
     }
+
+
 }
