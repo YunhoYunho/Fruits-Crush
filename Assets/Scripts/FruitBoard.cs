@@ -12,10 +12,13 @@ public class FruitBoard : MonoBehaviour
     public GameObject[] fruitPrefabs;
     public Node[,] fruitBoard;
     public GameObject fruitObject;
-
     public List<GameObject> destroyFruitList = new List<GameObject>();
-
     public static FruitBoard Instance;
+
+    [SerializeField]
+    private Fruits selectedFruit;
+    [SerializeField]
+    private bool isSwapping;
 
     private void Awake()
     {
@@ -27,6 +30,24 @@ public class FruitBoard : MonoBehaviour
         InitBoard();
     }
 
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+
+            if (null != hit.collider && hit.collider.gameObject.GetComponent<Fruits>())
+            {
+                if (isSwapping)
+                    return;
+
+                Fruits clickfruit = hit.collider.gameObject.GetComponent<Fruits>();
+                SelectFruit(clickfruit);
+            }
+        }
+    }
+
     private void InitBoard()
     {
         DestroyObject();
@@ -34,7 +55,6 @@ public class FruitBoard : MonoBehaviour
 
         spacingX = (float)(width - 1) / 2;
         spacingY = (float)(height - 1) / 2;
-
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
@@ -67,7 +87,6 @@ public class FruitBoard : MonoBehaviour
     {
         bool hasMatched = false;
         List<Fruits> removeFruitsList = new List<Fruits>();
-
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -77,14 +96,14 @@ public class FruitBoard : MonoBehaviour
                     Fruits curFruits = fruitBoard[x, y].fruit.GetComponent<Fruits>();
                     if (!curFruits.isMatched)
                     {
-                        MatchResult matchF = IsConnected(curFruits);
+                        MatchResult matchF = IsMatched(curFruits);
                         if (matchF.matchedFruits.Count >= 3)
                         {
-                            removeFruitsList.AddRange(matchF.matchedFruits);
+                            MatchResult specialMatching = SpecialMatch(matchF);
+                            removeFruitsList.AddRange(specialMatching.matchedFruits);
 
-                            foreach (Fruits f in matchF.matchedFruits)
+                            foreach (Fruits f in specialMatching.matchedFruits)
                                 f.isMatched = true;
-
                             hasMatched = true;
                         }
                     }
@@ -94,7 +113,64 @@ public class FruitBoard : MonoBehaviour
         return hasMatched;
     }
 
-    private MatchResult IsConnected(Fruits nowFruit)
+    private MatchResult SpecialMatch(MatchResult matchResult)
+    {
+        if (matchResult.dir == MatchDirection.Horizontal ||  matchResult.dir == MatchDirection.LongHorizontal)
+        {
+            foreach (Fruits f in matchResult.matchedFruits)
+            {
+                List<Fruits> extraConnectedFruits = new List<Fruits>();
+
+                CheckDirection(f, new Vector2Int(0, 1), extraConnectedFruits);
+                CheckDirection(f, new Vector2Int(0, -1), extraConnectedFruits);
+
+                if (extraConnectedFruits.Count >= 2)
+                {
+                    extraConnectedFruits.AddRange(matchResult.matchedFruits);
+
+                    return new MatchResult
+                    {
+                        matchedFruits = extraConnectedFruits,
+                        dir = MatchDirection.Special
+                    };
+                }
+            }
+            return new MatchResult
+            {
+                matchedFruits = matchResult.matchedFruits,
+                dir = matchResult.dir
+            };
+        }
+        else if (matchResult.dir == MatchDirection.Vertical || matchResult.dir == MatchDirection.LongVertical)
+        {
+            foreach (Fruits f in matchResult.matchedFruits)
+            {
+                List<Fruits> bonusFruitsList = new List<Fruits>();
+
+                CheckDirection(f, new Vector2Int(1, 0), bonusFruitsList);
+                CheckDirection(f, new Vector2Int(-1, 0), bonusFruitsList);
+
+                if (bonusFruitsList.Count >= 2)
+                {
+                    bonusFruitsList.AddRange(matchResult.matchedFruits);
+
+                    return new MatchResult
+                    {
+                        matchedFruits = bonusFruitsList,
+                        dir = MatchDirection.Special
+                    };
+                }
+            }
+            return new MatchResult
+            {
+                matchedFruits = matchResult.matchedFruits,
+                dir = matchResult.dir
+            };
+        }
+        return null;
+    }
+
+    private MatchResult IsMatched(Fruits nowFruit)
     {
         List<Fruits> matchedFruits = new List<Fruits>();
         FruitType fType = nowFruit.fruitType;
@@ -164,7 +240,6 @@ public class FruitBoard : MonoBehaviour
             if (fruitBoard[x, y].isUsable)
             {
                 Fruits nearFruits = fruitBoard[x, y].fruit.GetComponent<Fruits>();
-
                 if (!nearFruits.isMatched && nearFruits.fruitType == fruitType)
                 {
                     matchedFruits.Add(nearFruits);
@@ -178,6 +253,67 @@ public class FruitBoard : MonoBehaviour
                 break;
         }
     }
+
+    public void SelectFruit(Fruits curFruit)
+    {
+        if (isSwapping)
+            return;
+
+        if (null == selectedFruit)
+            selectedFruit = curFruit;
+        else if (selectedFruit == curFruit)
+            selectedFruit = null;
+        else if (selectedFruit != curFruit)
+        {
+            SwapFruit(selectedFruit, curFruit);
+            selectedFruit = null;
+        }
+    }
+
+    private void SwapFruit(Fruits curFruit, Fruits targetFruit)
+    {
+        if (!IsNearFruit(curFruit, targetFruit))
+            return;
+
+        Swapping(curFruit, targetFruit);
+        isSwapping = true;
+
+        StartCoroutine(MatchingRoutine(curFruit, targetFruit));
+    }
+
+    private bool IsNearFruit(Fruits curFruit, Fruits targetFruit)
+    {
+        return Mathf.Abs(curFruit.xPos - targetFruit.xPos) +
+            Mathf.Abs(curFruit.yPos - targetFruit.yPos) == 1;
+    }
+
+    private void Swapping(Fruits curFruit, Fruits targetFruit)
+    {
+        GameObject temp = fruitBoard[curFruit.xPos, curFruit.yPos].fruit;
+        fruitBoard[curFruit.xPos, curFruit.yPos].fruit = fruitBoard[targetFruit.xPos, targetFruit.yPos].fruit;
+        fruitBoard[targetFruit.xPos, targetFruit.yPos].fruit = temp;
+
+        int tempXPos = curFruit.xPos;
+        int tempYPos = curFruit.yPos;
+        curFruit.xPos = targetFruit.xPos;
+        curFruit.yPos = targetFruit.yPos;
+        targetFruit.xPos = tempXPos;
+        targetFruit.yPos = tempYPos;
+
+        curFruit.MoveToTarget(fruitBoard[targetFruit.xPos, targetFruit.yPos].fruit.transform.position);
+        targetFruit.MoveToTarget(fruitBoard[curFruit.xPos, curFruit.yPos].fruit.transform.position);
+    }
+
+    private IEnumerator MatchingRoutine(Fruits curFruit, Fruits targetFruit)
+    {
+        yield return new WaitForSeconds(0.2f);
+
+        bool hasMatch = CheckBoard();
+        if (!hasMatch)
+            Swapping(curFruit, targetFruit);
+
+        isSwapping = false;
+    }
 }
 
 public enum MatchDirection
@@ -186,6 +322,7 @@ public enum MatchDirection
     Horizontal,
     LongVertical,
     LongHorizontal,
+    Special,
     None,
 
     Size,
@@ -195,4 +332,16 @@ public class MatchResult
 {
     public List<Fruits> matchedFruits;
     public MatchDirection dir;
+}
+
+public class Node
+{
+    public bool isUsable;
+    public GameObject fruit;
+
+    public Node(bool isUsableNode, GameObject fruitObject)
+    {
+        isUsable = isUsableNode;
+        fruit = fruitObject;
+    }
 }
