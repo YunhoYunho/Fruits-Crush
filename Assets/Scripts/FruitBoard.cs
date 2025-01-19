@@ -4,21 +4,26 @@ using UnityEngine;
 
 public class FruitBoard : MonoBehaviour
 {
-    public int width = 6;
-    public int height = 8;
-    public float spacingX;
-    public float spacingY;
+    [SerializeField]
+    private int width = 6;
+    [SerializeField]
+    private int height = 8;
+    private float spacingX;
+    private float spacingY;
 
-    public GameObject[] fruitPrefabs;
-    public Node[,] fruitBoard;
-    public GameObject fruitObject;
+    private GameObject[] fruitPrefabs;
+    private Node[,] fruitBoard;
+    private GameObject fruitObject;
+    private GameObject fruitParent;
+    private static FruitBoard Instance;
     public List<GameObject> destroyFruitList = new List<GameObject>();
-    public static FruitBoard Instance;
 
     [SerializeField]
     private Fruits selectedFruit;
     [SerializeField]
     private bool isSwapping;
+    [SerializeField]
+    private List<Fruits> removeFruitsList = new List<Fruits>();
 
     private void Awake()
     {
@@ -54,7 +59,8 @@ public class FruitBoard : MonoBehaviour
         fruitBoard = new Node[width, height];
 
         spacingX = (float)(width - 1) / 2;
-        spacingY = (float)(height - 1) / 2;
+        spacingY = (float)((height - 1) / 2) + 1.5f;
+
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
@@ -63,6 +69,7 @@ public class FruitBoard : MonoBehaviour
                 int randomIdx = Random.Range(0, fruitPrefabs.Length);
 
                 GameObject fruit = Instantiate(fruitPrefabs[randomIdx], pos, Quaternion.identity);
+                fruit.transform.SetParent(fruitParent.transform);
                 fruit.GetComponent<Fruits>().SetPos(x, y);
                 fruitBoard[x, y] = new Node(true, fruit);
                 destroyFruitList.Add(fruit);
@@ -85,8 +92,17 @@ public class FruitBoard : MonoBehaviour
 
     public bool CheckBoard()
     {
+        if (GameManager.Instance.isGameEnded)
+            return false;
+
         bool hasMatched = false;
-        List<Fruits> removeFruitsList = new List<Fruits>();
+        removeFruitsList.Clear();
+        foreach (Node nodeFruit in fruitBoard)
+        {
+            if (null != nodeFruit.fruit)
+                nodeFruit.fruit.GetComponent<Fruits>().isMatched = false;
+        }
+
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -111,6 +127,85 @@ public class FruitBoard : MonoBehaviour
             }
         }
         return hasMatched;
+    }
+
+    public IEnumerator MatchingBoardRoutine()
+    {
+        foreach (Fruits removeFruit in removeFruitsList)
+            removeFruit.isMatched = false;
+
+        RemoveRefill(removeFruitsList);
+        GameManager.Instance.CheckScore(removeFruitsList.Count);
+        yield return new WaitForSeconds(0.4f);
+
+        if (CheckBoard())
+            StartCoroutine(MatchingBoardRoutine());
+    }
+
+    private void RemoveRefill(List<Fruits> removeList)
+    {
+        foreach (Fruits f in removeList)
+        {
+            int xPos = f.xPos;
+            int yPos = f.yPos;
+            Destroy(f.gameObject);
+            fruitBoard[xPos, yPos] = new Node(true, null);
+        }
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (null == fruitBoard[x, y].fruit)
+                    RefillFruit(x, y);
+            }
+        }
+    }
+
+    private void RefillFruit(int x, int y)
+    {
+        int yOffset = 1;
+        while (y + yOffset < height && null == fruitBoard[x, y + yOffset].fruit)
+            yOffset++;
+
+        if (y + yOffset < height && null != fruitBoard[x, y + yOffset].fruit)
+        {
+            Fruits upFruit = fruitBoard[x, y + yOffset].fruit.GetComponent<Fruits>();
+            Vector3 targetPos = new Vector3(x - spacingX, y - spacingY, upFruit.transform.position.z);
+            upFruit.MoveToTarget(targetPos);
+            upFruit.SetPos(x, y);
+            fruitBoard[x, y] = fruitBoard[x, y + yOffset];
+            fruitBoard[x, y + yOffset] = new Node(true, null);
+        }
+
+        if (y + yOffset == height)
+        {
+            SpawnNewFruits(x);
+        }
+    }
+
+    private void SpawnNewFruits(int x)
+    {
+        int newPos = CheckLowestEmpty(x);
+        int moveToPos = height - newPos;
+        int randomIdx = Random.Range(0, fruitPrefabs.Length);
+        GameObject newFruit = Instantiate(fruitPrefabs[randomIdx], new Vector2(x - spacingX, height - spacingY), Quaternion.identity);
+        newFruit.transform.SetParent(fruitParent.transform);
+        newFruit.GetComponent<Fruits>().SetPos(x, newPos);
+        fruitBoard[x, newPos] = new Node(true, newFruit);
+        Vector3 targetPos = new Vector3(newFruit.transform.position.x, newFruit.transform.position.y - moveToPos, newFruit.transform.position.z);
+        newFruit.GetComponent<Fruits>().MoveToTarget(targetPos);
+
+    }
+
+    private int CheckLowestEmpty(int x)
+    {
+        int lowestEmpty = 99;
+        for (int y = height - 1; y >= 0; y--)
+        {
+            if (null == fruitBoard[x, y].fruit)
+                lowestEmpty = y;
+        }
+        return lowestEmpty;
     }
 
     private MatchResult SpecialMatch(MatchResult matchResult)
@@ -172,50 +267,50 @@ public class FruitBoard : MonoBehaviour
 
     private MatchResult IsMatched(Fruits nowFruit)
     {
-        List<Fruits> matchedFruits = new List<Fruits>();
+        List<Fruits> matchedFruitsList = new List<Fruits>();
         FruitType fType = nowFruit.fruitType;
-        matchedFruits.Add(nowFruit);
+        matchedFruitsList.Add(nowFruit);
 
         // ÁÂ¿ì
-        CheckDirection(nowFruit, new Vector2Int(1, 0), matchedFruits);
-        CheckDirection(nowFruit, new Vector2Int(-1, 0), matchedFruits);
+        CheckDirection(nowFruit, new Vector2Int(1, 0), matchedFruitsList);
+        CheckDirection(nowFruit, new Vector2Int(-1, 0), matchedFruitsList);
 
-        if (matchedFruits.Count == 3)
+        if (matchedFruitsList.Count == 3)
         {
             return new MatchResult
             {
-                matchedFruits = matchedFruits,
+                matchedFruits = matchedFruitsList,
                 dir = MatchDirection.Horizontal
             };
         }
-        else if (matchedFruits.Count > 3)
+        else if (matchedFruitsList.Count > 3)
         {
             return new MatchResult
             {
-                matchedFruits = matchedFruits,
+                matchedFruits = matchedFruitsList,
                 dir = MatchDirection.LongHorizontal
             };
         }
-        matchedFruits.Clear();
-        matchedFruits.Add(nowFruit);
+        matchedFruitsList.Clear();
+        matchedFruitsList.Add(nowFruit);
   
         // »óÇÏ
-        CheckDirection(nowFruit, new Vector2Int(0, 1), matchedFruits);
-        CheckDirection(nowFruit, new Vector2Int(0, -1), matchedFruits);
+        CheckDirection(nowFruit, new Vector2Int(0, 1), matchedFruitsList);
+        CheckDirection(nowFruit, new Vector2Int(0, -1), matchedFruitsList);
 
-        if (matchedFruits.Count == 3)
+        if (matchedFruitsList.Count == 3)
         {
             return new MatchResult
             {
-                matchedFruits = matchedFruits,
+                matchedFruits = matchedFruitsList,
                 dir = MatchDirection.Vertical
             };
         }
-        else if (matchedFruits.Count > 3)
+        else if (matchedFruitsList.Count > 3)
         {
             return new MatchResult
             {
-                matchedFruits = matchedFruits,
+                matchedFruits = matchedFruitsList,
                 dir = MatchDirection.LongVertical
             };
         }
@@ -223,7 +318,7 @@ public class FruitBoard : MonoBehaviour
         {
             return new MatchResult
             {
-                matchedFruits = matchedFruits,
+                matchedFruits = matchedFruitsList,
                 dir = MatchDirection.None
             };
         }
@@ -277,7 +372,6 @@ public class FruitBoard : MonoBehaviour
 
         Swapping(curFruit, targetFruit);
         isSwapping = true;
-
         StartCoroutine(MatchingRoutine(curFruit, targetFruit));
     }
 
@@ -308,10 +402,10 @@ public class FruitBoard : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);
 
-        bool hasMatch = CheckBoard();
-        if (!hasMatch)
+        if (CheckBoard())
+            StartCoroutine(MatchingBoardRoutine());
+        else
             Swapping(curFruit, targetFruit);
-
         isSwapping = false;
     }
 }
@@ -326,22 +420,4 @@ public enum MatchDirection
     None,
 
     Size,
-}
-
-public class MatchResult
-{
-    public List<Fruits> matchedFruits;
-    public MatchDirection dir;
-}
-
-public class Node
-{
-    public bool isUsable;
-    public GameObject fruit;
-
-    public Node(bool isUsableNode, GameObject fruitObject)
-    {
-        isUsable = isUsableNode;
-        fruit = fruitObject;
-    }
 }
