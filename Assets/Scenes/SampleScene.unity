@@ -1813,7 +1813,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1359635811}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b57553223f765634a9b8b8a89709e651, type: 3}
+  m_Script: {fileID: 11500000, guid: 7b83c460eaebca94bb37afb6aa07b5ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   width: 3
@@ -1822,8 +1822,6 @@ MonoBehaviour:
   - {fileID: 8979450387177971987, guid: d3f50b45d83332b4086b92282b0f6219, type: 3}
   - {fileID: 2882840627675507281, guid: 9a3f684cfbaea90419d875afdac86268, type: 3}
   - {fileID: 4205566792496478950, guid: 5ae14134991b97b4d90c82387fb5373a, type: 3}
-  fruitObject: {fileID: 1359635811}
-  destroyFruitList: []
   fruitParent: {fileID: 420596513}
   selectedFruit: {fileID: 0}
   isSwapping: 0

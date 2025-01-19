@@ -3,15 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum FruitType
-{
-    Apple,
-    Banana,
-    Grape,
-
-    Size,
-}
-
 public class Fruits : MonoBehaviour
 {
     public FruitType fruitType;
@@ -62,3 +53,13 @@ public class Fruits : MonoBehaviour
         isMoving = false;
     }
 }
+
+public enum FruitType
+{
+    Apple,
+    Banana,
+    Grape,
+
+    Size,
+}
+
