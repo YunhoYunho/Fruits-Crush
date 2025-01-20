@@ -59,6 +59,8 @@ public enum FruitType
     Apple,
     Banana,
     Grape,
+    Blueberry,
+    Orange,
 
     Size,
 }
