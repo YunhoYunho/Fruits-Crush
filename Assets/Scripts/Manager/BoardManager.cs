@@ -21,6 +21,8 @@ public class BoardManager : SingleTon<BoardManager>
     private bool isSwapping;
     [SerializeField]
     private List<Fruits> removeFruitsList = new List<Fruits>();
+    [SerializeField]
+    private GetPoolObject getPool;
 
     private float spacingX;
     private float spacingY;
@@ -69,8 +71,7 @@ public class BoardManager : SingleTon<BoardManager>
             {
                 Vector2 pos = new Vector2(x - spacingX, y - spacingY);
                 int randomIdx = Random.Range(0, fruitPrefabs.Length);
-
-                GameObject fruit = Instantiate(fruitPrefabs[randomIdx], pos, Quaternion.identity);
+                GameObject fruit = getPool.GetPool(fruitPrefabs[randomIdx].name, pos, Quaternion.identity);
                 fruit.transform.SetParent(fruitParent.transform);
                 fruit.GetComponent<Fruits>().SetPos(x, y);
                 fruitBoard[x, y] = new Node(true, fruit);
@@ -86,7 +87,7 @@ public class BoardManager : SingleTon<BoardManager>
         if (null != destroyFruitList)
         {
             foreach (GameObject go in destroyFruitList)
-                Destroy(go);
+                PoolManager.Instance.Release(go);
 
             destroyFruitList.Clear();
         }
@@ -148,7 +149,7 @@ public class BoardManager : SingleTon<BoardManager>
         {
             int xPos = f.xPos;
             int yPos = f.yPos;
-            Destroy(f.gameObject);
+            PoolManager.Instance.Release(f.gameObject);
             fruitBoard[xPos, yPos] = new Node(true, null);
         }
         for (int x = 0; x < width; x++)
@@ -186,7 +187,7 @@ public class BoardManager : SingleTon<BoardManager>
         int newPos = CheckLowestEmpty(x);
         int moveToPos = height - newPos;
         int randomIdx = Random.Range(0, fruitPrefabs.Length);
-        GameObject newFruit = Instantiate(fruitPrefabs[randomIdx], new Vector2(x - spacingX, height - spacingY), Quaternion.identity);
+        GameObject newFruit = getPool.GetPool(fruitPrefabs[randomIdx].name, new Vector2(x - spacingX, height - spacingY), Quaternion.identity);
         newFruit.transform.SetParent(fruitParent.transform);
         newFruit.GetComponent<Fruits>().SetPos(x, newPos);
         fruitBoard[x, newPos] = new Node(true, newFruit);
