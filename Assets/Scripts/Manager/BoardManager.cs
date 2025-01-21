@@ -9,8 +9,7 @@ public class BoardManager : SingleTon<BoardManager>
     private int width = 6;
     [SerializeField]
     private int height = 8;
-    [SerializeField]
-    private GameObject fruitParent;
+    public GameObject fruitParent;
     public GameObject[] fruitPrefabs;
 
     [Header("Debug")]
