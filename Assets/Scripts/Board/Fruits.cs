@@ -58,8 +58,8 @@ public enum FruitType
 {
     Apple,
     Banana,
-    Grape,
     Blueberry,
+    Grape,
     Orange,
 
     Size,

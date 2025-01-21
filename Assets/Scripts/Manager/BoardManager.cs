@@ -10,9 +10,8 @@ public class BoardManager : SingleTon<BoardManager>
     [SerializeField]
     private int height = 8;
     [SerializeField]
-    private GameObject[] fruitPrefabs;
-    [SerializeField]
     private GameObject fruitParent;
+    public GameObject[] fruitPrefabs;
 
     [Header("Debug")]
     [SerializeField]
@@ -27,7 +26,7 @@ public class BoardManager : SingleTon<BoardManager>
     private float spacingX;
     private float spacingY;
     private Node[,] fruitBoard;
-    private List<GameObject> destroyFruitList = new List<GameObject>();
+    private List<GameObject> activeFruitList = new List<GameObject>();
 
     private void Start()
     {
@@ -75,7 +74,7 @@ public class BoardManager : SingleTon<BoardManager>
                 fruit.transform.SetParent(fruitParent.transform);
                 fruit.GetComponent<Fruits>().SetPos(x, y);
                 fruitBoard[x, y] = new Node(true, fruit);
-                destroyFruitList.Add(fruit);
+                activeFruitList.Add(fruit);
             }
         }
         if (CheckBoard())
@@ -84,12 +83,12 @@ public class BoardManager : SingleTon<BoardManager>
 
     private void DestroyObject()
     {
-        if (null != destroyFruitList)
+        if (null != activeFruitList)
         {
-            foreach (GameObject go in destroyFruitList)
+            foreach (GameObject go in activeFruitList)
                 PoolManager.Instance.Release(go);
 
-            destroyFruitList.Clear();
+            activeFruitList.Clear();
         }
     }
 
@@ -136,8 +135,9 @@ public class BoardManager : SingleTon<BoardManager>
             removeFruit.isMatched = false;
 
         RemoveRefill(removeFruitsList);
-        GameManager.Instance.CheckScore(removeFruitsList.Count);
         yield return new WaitForSeconds(0.4f);
+
+        GameManager.Instance.MatchFruitsCount(removeFruitsList[0].fruitType, removeFruitsList.Count);
 
         if (CheckBoard())
             StartCoroutine(MatchingBoardRoutine());

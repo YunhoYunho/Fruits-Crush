@@ -298,8 +298,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 558148532}
   - {fileID: 544201330}
+  - {fileID: 558148532}
   m_Father: {fileID: 225445256}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -503,7 +503,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 500472469}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
@@ -576,8 +576,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 432649006}
   - {fileID: 1194022380}
+  - {fileID: 432649006}
   m_Father: {fileID: 225445256}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -701,7 +701,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 296755330}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
@@ -838,7 +838,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 296755330}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
@@ -1508,7 +1508,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 500472469}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
@@ -1941,6 +1941,7 @@ GameObject:
   - component: {fileID: 1276105310}
   - component: {fileID: 1276105309}
   - component: {fileID: 1276105311}
+  - component: {fileID: 1276105312}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -1960,8 +1961,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a82c25a141df62e44a5cee6074a14da4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  score: 0
-  goal: 100
   level: 0
   isGameEnded: 0
 --- !u!4 &1276105310
@@ -1995,17 +1994,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 6
   height: 8
+  fruitParent: {fileID: 420596513}
   fruitPrefabs:
   - {fileID: 8979450387177971987, guid: d3f50b45d83332b4086b92282b0f6219, type: 3}
   - {fileID: 2882840627675507281, guid: 9a3f684cfbaea90419d875afdac86268, type: 3}
-  - {fileID: 4205566792496478950, guid: 5ae14134991b97b4d90c82387fb5373a, type: 3}
   - {fileID: 2330528181280673961, guid: 01542579fc5c0cd42a77cb9af6eb7c30, type: 3}
+  - {fileID: 4205566792496478950, guid: 5ae14134991b97b4d90c82387fb5373a, type: 3}
   - {fileID: 8940087724454646159, guid: 014a286efec195c489e36d0212dbd930, type: 3}
-  fruitParent: {fileID: 420596513}
   selectedFruit: {fileID: 0}
   isSwapping: 0
   removeFruitsList: []
   getPool: {fileID: 2058898488}
+--- !u!114 &1276105312
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1276105308}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2616ad5e100442469a4b5899edc2e21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  victoryPanel: {fileID: 1086590723}
+  goal1Text: {fileID: 1194022381}
+  goal1Image: {fileID: 432649007}
+  goal2Text: {fileID: 544201331}
+  goal2Image: {fileID: 558148533}
 --- !u!1 &1454101292
 GameObject:
   m_ObjectHideFlags: 0
