@@ -1,12 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
-public class GameManager : SingleTon<GameManager>
+public class GameManager : MonoBehaviour
 {
-    public int level;
+    public int curlevel;
     public bool isGameEnded;
+
+    public BoardController boardController;
+    public GameObject victoryPanel;
+    public TextMeshProUGUI goal1Text;
+    public Image goal1Image;
+    public TextMeshProUGUI goal2Text;
+    public Image goal2Image;
 
     private FruitType goal1Type;
     private FruitType goal2Type;
@@ -17,20 +27,27 @@ public class GameManager : SingleTon<GameManager>
     private UnityEvent<int> OnGoal1Changed = new UnityEvent<int>(); 
     private UnityEvent<int> OnGoal2Changed = new UnityEvent<int>();
 
-    private void OnEnable()
+    public static GameManager Instance;
+
+    private void Awake()
     {
-        InitGoal();
+        if (null == Instance)
+            Instance = this;
+        else
+            Destroy(gameObject);
+        boardController = GetComponent<BoardController>();
     }
 
     private void Start()
     {
         CheckCnt();
+        InitGoal();
     }
 
     private void CheckCnt()
     {
-        OnGoal1Changed.AddListener((goal1Cnt) => { UIManager.Instance.goal1Text.text = goal1Cnt.ToString(); });
-        OnGoal2Changed.AddListener((goal2Cnt) => { UIManager.Instance.goal2Text.text = goal2Cnt.ToString(); });
+        OnGoal1Changed.AddListener((goal1Cnt) => { goal1Text.text = goal1Cnt.ToString(); });
+        OnGoal2Changed.AddListener((goal2Cnt) => { goal2Text.text = goal2Cnt.ToString(); });
     }
 
     private void InitGoal()
@@ -45,10 +62,10 @@ public class GameManager : SingleTon<GameManager>
         goal1Cnt = Random.Range(10, 15);
         goal2Cnt = Random.Range(10, 15);
 
-        UIManager.Instance.goal1Text.text = goal1Cnt.ToString();
-        UIManager.Instance.goal2Text.text = goal2Cnt.ToString();
-        UIManager.Instance.goal1Image.sprite = BoardManager.Instance.fruitPrefabs[r1].GetComponent<SpriteRenderer>().sprite;
-        UIManager.Instance.goal2Image.sprite = BoardManager.Instance.fruitPrefabs[r2].GetComponent<SpriteRenderer>().sprite;
+        goal1Text.text = goal1Cnt.ToString();
+        goal2Text.text = goal2Cnt.ToString();
+        goal1Image.sprite = boardController.fruitPrefabs[r1].GetComponent<SpriteRenderer>().sprite;
+        goal2Image.sprite = boardController.fruitPrefabs[r2].GetComponent<SpriteRenderer>().sprite;
     }
 
     public void MatchFruitsCount(FruitType type, int cnt)
@@ -68,10 +85,22 @@ public class GameManager : SingleTon<GameManager>
         CheckClear();
     }
 
-    private void CheckClear()
+    public void CheckClear()
     {
         isGameEnded = (goal1Cnt <= 0 && goal2Cnt <= 0);
         if (isGameEnded)
+        {
             Debug.Log("게임 클리어");
+            victoryPanel.SetActive(true);
+            boardController.fruitParent.gameObject.SetActive(false);
+            int nextLevel = curlevel + 1;
+            if (nextLevel < 6)
+                DataManager.Instance.SetUnlockedLevel(nextLevel);
+        }
+    }
+
+    public void ReturnToMain()
+    {
+        SceneManager.LoadScene(0);
     }
 }

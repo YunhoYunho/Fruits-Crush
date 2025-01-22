@@ -10,7 +10,7 @@ public class PoolManager : SingleTon<PoolManager>
     [SerializeField]
     private List<Poolable> poolPrefab;
 
-    private void Awake()
+    public override void Awake()
     {
         poolDic = new Dictionary<string, Stack<GameObject>>();
     }

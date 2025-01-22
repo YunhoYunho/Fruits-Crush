@@ -2,10 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SingleTon<T> : MonoBehaviour where T : MonoBehaviour
+public class SingleTon<T> : MonoBehaviour where T : Component
 {
-    public const string gameObjectName = "Manager";
-
     private static T instance;
     public static T Instance
     {
@@ -17,7 +15,7 @@ public class SingleTon<T> : MonoBehaviour where T : MonoBehaviour
                 if (null == instance)
                 {
                     GameObject gameObject = new GameObject();
-                    gameObject.name = gameObjectName;
+                    gameObject.name = typeof(T).Name;
                     instance = gameObject.AddComponent<T>();
                 }
             }
@@ -25,8 +23,14 @@ public class SingleTon<T> : MonoBehaviour where T : MonoBehaviour
         }
     }
 
-    private void Awake()
+    public virtual void Awake()
     {
-        DontDestroyOnLoad(gameObject);
+        if (null == instance)
+        {
+            instance = this as T;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+            Destroy(gameObject);
     }
 }
