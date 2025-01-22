@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BoardManager : SingleTon<BoardManager>
+public class BoardController : MonoBehaviour
 {
     [Header("Board")]
     [SerializeField]
@@ -26,6 +26,11 @@ public class BoardManager : SingleTon<BoardManager>
     private float spacingY;
     private Node[,] fruitBoard;
     private List<GameObject> activeFruitList = new List<GameObject>();
+
+    private void Awake()
+    {
+        getPool = FindObjectOfType<GetPoolObject>();
+    }
 
     private void Start()
     {
