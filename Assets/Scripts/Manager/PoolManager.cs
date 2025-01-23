@@ -3,15 +3,43 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PoolManager : SingleTon<PoolManager>
+public class PoolManager : MonoBehaviour
 {
+    private static GameObject container;
+    private static PoolManager instance;
+    public static PoolManager Instance
+    {
+        get
+        {
+            if (null == instance)
+            {
+                instance = FindObjectOfType<PoolManager>();
+                if (null == instance)
+                {
+                    container = new GameObject("PoolManager");
+                    instance = container.AddComponent<PoolManager>();
+                    DontDestroyOnLoad(container);
+                }
+            }
+            return instance;
+        }
+    }
+
     private Dictionary<string, Stack<GameObject>> poolDic;
 
     [SerializeField]
     private List<Poolable> poolPrefab;
 
-    public override void Awake()
+    private void Awake()
     {
+        if (null == instance)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+            Destroy(gameObject);
+
         poolDic = new Dictionary<string, Stack<GameObject>>();
     }
 
