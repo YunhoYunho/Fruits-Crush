@@ -10,11 +10,15 @@ public class Fruits : MonoBehaviour
     public int xPos;
     public int yPos;
 
-    private Vector2 curPos;
-    private Vector2 targetPos;
-
     public bool isMatched;
     public bool isMoving;
+
+    private Animator animator;
+
+    private void Awake()
+    {
+        animator = GetComponent<Animator>();
+    }
 
     public Fruits(int xPosition, int yPosition)
     {
@@ -51,6 +55,11 @@ public class Fruits : MonoBehaviour
         }
         transform.position = movePos;
         isMoving = false;
+    }
+
+    public void StartPang()
+    {
+        animator.SetTrigger("Pang");
     }
 }
 

@@ -136,7 +136,15 @@ public class BoardController : MonoBehaviour
     private IEnumerator MatchingBoardRoutine()
     {
         foreach (Fruits removeFruit in removeFruitsList)
+            removeFruit.StartPang();
+
+        yield return new WaitForSeconds(0.7f);
+
+        foreach (Fruits removeFruit in removeFruitsList)
+        {
             removeFruit.isMatched = false;
+            PoolManager.Instance.Release(removeFruit.gameObject);
+        }
 
         RemoveRefill(removeFruitsList);
         yield return new WaitForSeconds(0.4f);
@@ -153,7 +161,6 @@ public class BoardController : MonoBehaviour
         {
             int xPos = f.xPos;
             int yPos = f.yPos;
-            PoolManager.Instance.Release(f.gameObject);
             fruitBoard[xPos, yPos] = new Node(true, null);
         }
         for (int x = 0; x < width; x++)
