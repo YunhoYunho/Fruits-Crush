@@ -136,7 +136,7 @@ public class BoardController : MonoBehaviour
     private IEnumerator MatchingBoardRoutine()
     {
         foreach (Fruits removeFruit in removeFruitsList)
-            removeFruit.StartPang();
+            removeFruit.SetMatching();
 
         yield return new WaitForSeconds(0.7f);
 
@@ -364,11 +364,18 @@ public class BoardController : MonoBehaviour
             return;
 
         if (null == selectedFruit)
+        {
             selectedFruit = curFruit;
+            selectedFruit.ActiveSelectedUI(true);
+        }
         else if (selectedFruit == curFruit)
+        {
+            selectedFruit.ActiveSelectedUI(false);
             selectedFruit = null;
+        }
         else if (selectedFruit != curFruit)
         {
+            selectedFruit.ActiveSelectedUI(false);
             SwapFruit(selectedFruit, curFruit);
             selectedFruit = null;
         }

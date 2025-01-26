@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Fruits : MonoBehaviour
 {
@@ -14,10 +15,12 @@ public class Fruits : MonoBehaviour
     public bool isMoving;
 
     private Animator animator;
+    private Image selectImage;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        selectImage = GetComponentInChildren<Image>();
     }
 
     public Fruits(int xPosition, int yPosition)
@@ -57,9 +60,16 @@ public class Fruits : MonoBehaviour
         isMoving = false;
     }
 
-    public void StartPang()
+    public void SetMatching()
     {
         animator.SetTrigger("Pang");
+    }
+
+    public void ActiveSelectedUI(bool isActive)
+    {
+        Color color = selectImage.color;
+        color.a = isActive ? 1 : 0;
+        selectImage.color = color;
     }
 }
 
