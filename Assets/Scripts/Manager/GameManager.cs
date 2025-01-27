@@ -8,7 +8,6 @@ using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
-    public int curlevel;
     public bool isGameEnded;
 
     public BoardController boardController;
@@ -17,6 +16,7 @@ public class GameManager : MonoBehaviour
     public Image goal1Image;
     public TextMeshProUGUI goal2Text;
     public Image goal2Image;
+    public TextMeshProUGUI curLevelText;
 
     private FruitType goal1Type;
     private FruitType goal2Type;
@@ -42,6 +42,7 @@ public class GameManager : MonoBehaviour
     {
         CheckCnt();
         InitGoal();
+        ShowCurLevelUI();
     }
 
     private void CheckCnt()
@@ -59,13 +60,19 @@ public class GameManager : MonoBehaviour
 
         goal1Type = (FruitType)r1;
         goal2Type = (FruitType)r2;
-        goal1Cnt = Random.Range(10, 15);
-        goal2Cnt = Random.Range(10, 15);
+        goal1Cnt = Random.Range(1, 3);
+        goal2Cnt = Random.Range(1, 3);
 
         goal1Text.text = goal1Cnt.ToString();
         goal2Text.text = goal2Cnt.ToString();
         goal1Image.sprite = boardController.fruitPrefabs[r1].GetComponent<SpriteRenderer>().sprite;
         goal2Image.sprite = boardController.fruitPrefabs[r2].GetComponent<SpriteRenderer>().sprite;
+    }
+
+    private void ShowCurLevelUI()
+    {
+        int level = DataManager.Instance.playerData.myLevel + 1;
+        curLevelText.text = $"Level : {level}";
     }
 
     public void MatchFruitsCount(FruitType type, int cnt)
@@ -93,9 +100,13 @@ public class GameManager : MonoBehaviour
             Debug.Log("게임 클리어");
             victoryPanel.SetActive(true);
             boardController.fruitParent.gameObject.SetActive(false);
-            int nextLevel = curlevel + 1;
-            if (nextLevel < 6)
-                DataManager.Instance.SetUnlockedLevel(nextLevel);
+            int level = DataManager.Instance.playerData.myLevel;
+            if (level < 5)
+            {
+                DataManager.Instance.playerData.isUnlock[level + 1] = true;
+                DataManager.Instance.playerData.myLevel = level + 1;
+                DataManager.Instance.SaveData();
+            }
         }
     }
 
