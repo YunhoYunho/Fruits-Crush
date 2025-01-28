@@ -17,15 +17,19 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI goal2Text;
     public Image goal2Image;
     public TextMeshProUGUI curLevelText;
+    public TextMeshProUGUI curScoreText;
+    public FruitType goal1Type;
+    public FruitType goal2Type;
 
-    private FruitType goal1Type;
-    private FruitType goal2Type;
     private int goal1Cnt;
     private int goal2Cnt;
+    private int curScore;
     public int Goal1Cnt { get { return goal1Cnt; } private set {  goal1Cnt = value; OnGoal1Changed?.Invoke(goal1Cnt); } }
     public int Goal2Cnt { get { return goal2Cnt; } private set {  goal2Cnt = value; OnGoal2Changed?.Invoke(goal2Cnt); } }
+    public int CurScore { get { return curScore; } private set { curScore = value; OnScoreChanged?.Invoke(curScore); } }
     private UnityEvent<int> OnGoal1Changed = new UnityEvent<int>(); 
     private UnityEvent<int> OnGoal2Changed = new UnityEvent<int>();
+    private UnityEvent<int> OnScoreChanged = new UnityEvent<int>();
 
     public static GameManager Instance;
 
@@ -35,13 +39,12 @@ public class GameManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
-        boardController = GetComponent<BoardController>();
     }
 
     private void Start()
     {
         CheckCnt();
-        InitGoal();
+        InitUITexts();
         ShowCurLevelUI();
     }
 
@@ -49,9 +52,10 @@ public class GameManager : MonoBehaviour
     {
         OnGoal1Changed.AddListener((goal1Cnt) => { goal1Text.text = goal1Cnt.ToString(); });
         OnGoal2Changed.AddListener((goal2Cnt) => { goal2Text.text = goal2Cnt.ToString(); });
+        OnScoreChanged.AddListener((scoreCnt) => { curScoreText.text = scoreCnt.ToString(); });
     }
 
-    private void InitGoal()
+    private void InitUITexts()
     {
         int r1 = Random.Range(0, 5);
         int r2 = Random.Range(0, 5);
@@ -60,8 +64,9 @@ public class GameManager : MonoBehaviour
 
         goal1Type = (FruitType)r1;
         goal2Type = (FruitType)r2;
-        goal1Cnt = Random.Range(1, 3);
-        goal2Cnt = Random.Range(1, 3);
+        goal1Cnt = Random.Range(10, 13);
+        goal2Cnt = Random.Range(10, 13);
+        curScore = 0;
 
         goal1Text.text = goal1Cnt.ToString();
         goal2Text.text = goal2Cnt.ToString();
@@ -103,11 +108,28 @@ public class GameManager : MonoBehaviour
             int level = DataManager.Instance.playerData.myLevel;
             if (level < 5)
             {
-                DataManager.Instance.playerData.isUnlock[level + 1] = true;
                 DataManager.Instance.playerData.myLevel = level + 1;
+                DataManager.Instance.playerData.scoreStar[level] = StarCnt(curScore);
                 DataManager.Instance.SaveData();
             }
         }
+    }
+
+    public void AddScore(int score)
+    {
+        CurScore += score;
+        curScoreText.text = curScore.ToString();
+    }
+
+    public int StarCnt(int score)
+    {
+        if (score <= 100)
+            return 1;
+        else if (score > 100 && score <= 200)
+            return 2;
+        else if (score > 200)
+            return 3;
+        return 1;
     }
 
     public void ReturnToMain()

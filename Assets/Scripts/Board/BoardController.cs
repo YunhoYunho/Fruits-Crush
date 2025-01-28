@@ -138,6 +138,21 @@ public class BoardController : MonoBehaviour
         foreach (Fruits removeFruit in removeFruitsList)
             removeFruit.SetMatching();
 
+        yield return new WaitForSeconds(0.1f);
+
+        if (removeFruitsList[0].fruitType == GameManager.Instance.goal1Type
+            || removeFruitsList[0].fruitType == GameManager.Instance.goal2Type)
+        {
+            int score = 0;
+            if (removeFruitsList.Count == 3)
+                score += (removeFruitsList.Count * 10);
+            else if (removeFruitsList.Count == 4)
+                score += (removeFruitsList.Count * 20);
+            else if (removeFruitsList.Count >= 5)
+                score += (removeFruitsList.Count * 30);
+            GameManager.Instance.AddScore(score);
+        }
+
         yield return new WaitForSeconds(0.7f);
 
         foreach (Fruits removeFruit in removeFruitsList)
