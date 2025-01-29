@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,54 +8,74 @@ using UnityEngine.UI;
 public class LevelController : MonoBehaviour
 {
     [SerializeField]
-    private GameObject levelButtons;
+    private LevelData[] levelData;
     [SerializeField]
-    private Button[] buttons;
+    private GameObject stageUI;
     private int unlockedLevel;
+    private bool isPlaying = false;
 
     private void OnEnable()
     {
-        InitButton();
+        InitStars();
+        ShowStageUI();
     }
 
-    private void InitButton()
+    private void InitStars()
     {
-        int cnt = levelButtons.transform.childCount;
-        buttons = new Button[cnt];
-        for (int i = 0; i < cnt; i++)
-            buttons[i] = levelButtons.transform.GetChild(i).gameObject.GetComponent<Button>();
+        foreach (var level in levelData)
+            for (int i = 0; i < level.stars.Length; i++)
+                level.stars[i].SetActive(false);
+        isPlaying = true;
+    }
+
+    private void ShowStageUI()
+    {
+        if (isPlaying)
+            stageUI.SetActive(true);
     }
 
     private void Start()
     {
-        SetLevel();
-    }
-
-    private void SetLevel()
-    {
-        DataManager.Instance.LoadData();
-        for (int i = 0; i < DataManager.Instance.playerData.isUnlock.Length; i++)
-            if (DataManager.Instance.playerData.isUnlock[i])
-                unlockedLevel = i;
         SetButtonActive();
     }
 
     private void SetButtonActive()
     {
-        for (int i = 0; i < buttons.Length; i++)
-            buttons[i].interactable = i <= unlockedLevel;
+        DataManager.Instance.LoadData();
+        for (int i = 0; i < levelData.Length; i++)
+            levelData[i].button.interactable = i <= DataManager.Instance.playerData.myLevel;
+        UpdateStars();
+    }
+
+    private void UpdateStars()
+    {
+        if (null == DataManager.Instance.playerData)
+            return;
+
+        for (int i = 0; i < levelData.Length; i++)
+        {
+            if (i <= DataManager.Instance.playerData.myLevel)
+            {
+                int cnt = DataManager.Instance.playerData.scoreStar[i];
+                for (int j = 0; j < levelData[i].stars.Length; j++)
+                    levelData[i].stars[j].SetActive(j < cnt);
+            }
+            else
+                for (int j = 0; j < levelData[i].stars.Length; j++)
+                    levelData[i].stars[j].SetActive(false);
+        }
     }
 
     public void NewGame()
     {
         DataManager.Instance.ClearData();
-        SetLevel();
+        SetButtonActive();
     }
 
     public void LoadGame()
     {
         DataManager.Instance.LoadData();
-        SetLevel();
+        SetButtonActive();
     }
 
     public void SelectGame()
@@ -67,4 +88,11 @@ public class LevelController : MonoBehaviour
         DataManager.Instance.SaveData();
         Application.Quit();
     }
+}
+
+[Serializable]
+public class LevelData
+{
+    public Button button;
+    public GameObject[] stars;
 }

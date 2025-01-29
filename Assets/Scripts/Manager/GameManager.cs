@@ -24,10 +24,10 @@ public class GameManager : MonoBehaviour
     private int goal1Cnt;
     private int goal2Cnt;
     private int curScore;
-    public int Goal1Cnt { get { return goal1Cnt; } private set {  goal1Cnt = value; OnGoal1Changed?.Invoke(goal1Cnt); } }
-    public int Goal2Cnt { get { return goal2Cnt; } private set {  goal2Cnt = value; OnGoal2Changed?.Invoke(goal2Cnt); } }
+    public int Goal1Cnt { get { return goal1Cnt; } private set { goal1Cnt = value; OnGoal1Changed?.Invoke(goal1Cnt); } }
+    public int Goal2Cnt { get { return goal2Cnt; } private set { goal2Cnt = value; OnGoal2Changed?.Invoke(goal2Cnt); } }
     public int CurScore { get { return curScore; } private set { curScore = value; OnScoreChanged?.Invoke(curScore); } }
-    private UnityEvent<int> OnGoal1Changed = new UnityEvent<int>(); 
+    private UnityEvent<int> OnGoal1Changed = new UnityEvent<int>();
     private UnityEvent<int> OnGoal2Changed = new UnityEvent<int>();
     private UnityEvent<int> OnScoreChanged = new UnityEvent<int>();
 
@@ -106,12 +106,10 @@ public class GameManager : MonoBehaviour
             victoryPanel.SetActive(true);
             boardController.fruitParent.gameObject.SetActive(false);
             int level = DataManager.Instance.playerData.myLevel;
-            if (level < 5)
-            {
+            if (level < DataManager.Instance.playerData.scoreStar.Length - 1)
                 DataManager.Instance.playerData.myLevel = level + 1;
-                DataManager.Instance.playerData.scoreStar[level] = StarCnt(curScore);
-                DataManager.Instance.SaveData();
-            }
+            DataManager.Instance.playerData.scoreStar[level] = StarCnt(curScore);
+            DataManager.Instance.SaveData();
         }
     }
 

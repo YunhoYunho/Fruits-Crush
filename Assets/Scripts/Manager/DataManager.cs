@@ -46,8 +46,8 @@ public class DataManager : MonoBehaviour
     {
         playerData = new PlayerData
         {
-            isUnlock = new[] { true, false, false, false, false, false },
-            myLevel = 0
+            myLevel = 0,
+            scoreStar = new[] { 0, 0, 0, 0, 0, 0 }
         };
         SaveData();
     }
@@ -56,6 +56,6 @@ public class DataManager : MonoBehaviour
 [Serializable]
 public class PlayerData
 {
-    public bool[] isUnlock = new bool[6];
     public int myLevel;
+    public int[] scoreStar = new int[6];
 }
