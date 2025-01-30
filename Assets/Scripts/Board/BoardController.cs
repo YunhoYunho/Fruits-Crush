@@ -26,6 +26,8 @@ public class BoardController : MonoBehaviour
     private float spacingY;
     private Node[,] fruitBoard;
     private List<GameObject> activeFruitList = new List<GameObject>();
+    private List<FruitType> typeKindList = new List<FruitType>();
+    private int[] goalCntList = new int[2];
 
     private void Awake()
     {
@@ -35,6 +37,7 @@ public class BoardController : MonoBehaviour
     private void Start()
     {
         InitBoard();
+        InitType();
     }
 
     private void Update()
@@ -83,6 +86,12 @@ public class BoardController : MonoBehaviour
         }
         if (CheckBoard())
             InitBoard();
+    }
+
+    private void InitType()
+    {
+        typeKindList.Add(GameManager.Instance.goal1Type);
+        typeKindList.Add(GameManager.Instance.goal2Type);
     }
 
     private void DestroyObject()
@@ -136,23 +145,31 @@ public class BoardController : MonoBehaviour
     private IEnumerator MatchingBoardRoutine()
     {
         foreach (Fruits removeFruit in removeFruitsList)
+        {
             removeFruit.SetMatching();
-
+            if (removeFruit.fruitType == typeKindList[0])
+                goalCntList[0]++;
+            else if (removeFruit.fruitType == typeKindList[1])
+                goalCntList[1]++;
+        }
         yield return new WaitForSeconds(0.1f);
 
-        if (removeFruitsList[0].fruitType == GameManager.Instance.goal1Type
-            || removeFruitsList[0].fruitType == GameManager.Instance.goal2Type)
+        for (int i = 0; i < 2; i++)
         {
-            int score = 0;
-            if (removeFruitsList.Count == 3)
-                score += (removeFruitsList.Count * 10);
-            else if (removeFruitsList.Count == 4)
-                score += (removeFruitsList.Count * 20);
-            else if (removeFruitsList.Count >= 5)
-                score += (removeFruitsList.Count * 30);
-            GameManager.Instance.AddScore(score);
-        }
+            if (goalCntList[i] == 0)
+                continue;
 
+            int score = 0;
+            if (goalCntList[i] == 3)
+                score += (goalCntList[i] * 10);
+            else if (goalCntList[i] == 4)
+                score += (goalCntList[i] * 20);
+            else if (goalCntList[i] >= 5)
+                score += (goalCntList[i] * 30);
+            GameManager.Instance.AddScore(score);
+            GameManager.Instance.MatchFruitsCount(typeKindList[i], goalCntList[i]);
+            goalCntList[i] = 0;
+        }
         yield return new WaitForSeconds(0.7f);
 
         foreach (Fruits removeFruit in removeFruitsList)
@@ -163,8 +180,6 @@ public class BoardController : MonoBehaviour
 
         RemoveRefill(removeFruitsList);
         yield return new WaitForSeconds(0.4f);
-
-        GameManager.Instance.MatchFruitsCount(removeFruitsList[0].fruitType, removeFruitsList.Count);
 
         if (CheckBoard())
             StartCoroutine(MatchingBoardRoutine());
@@ -438,6 +453,63 @@ public class BoardController : MonoBehaviour
         else
             Swapping(curFruit, targetFruit);
         isSwapping = false;
+    }
+
+    public void CrossCheck()
+    {
+        if (null == selectedFruit)
+            return;
+
+        List<Fruits> crossList = new List<Fruits>();
+        int xPos = selectedFruit.xPos;
+        int yPos = selectedFruit.yPos;
+        for (int x = 0; x < width; x++)
+            crossList.Add(fruitBoard[x, yPos].fruit.GetComponent<Fruits>());
+        for (int y = 0; y < height; y++)
+        {
+            if (y == yPos)
+                continue;
+            crossList.Add(fruitBoard[xPos, y].fruit.gameObject.GetComponent<Fruits>());
+        }
+        StartCoroutine(CrossCheckRoutine(crossList));
+    }
+
+    private IEnumerator CrossCheckRoutine(List<Fruits> crossList)
+    {
+        foreach (Fruits removeFruit in crossList)
+        {
+            removeFruit.SetMatching();
+            if (removeFruit.fruitType == typeKindList[0])
+                goalCntList[0]++;
+            else if (removeFruit.fruitType == typeKindList[1])
+                goalCntList[1]++;
+        }
+        yield return new WaitForSeconds(0.1f);
+
+        for (int i = 0; i < 2; i++)
+        {
+            if (goalCntList[i] == 0)
+                continue;
+
+            GameManager.Instance.MatchFruitsCount(typeKindList[i], goalCntList[i]);
+        }
+        int score = crossList.Count * 10;
+        GameManager.Instance.AddScore(score);
+        yield return new WaitForSeconds(0.7f);
+
+        foreach (Fruits removeFruit in crossList)
+        {
+            removeFruit.isMatched = false;
+            PoolManager.Instance.Release(removeFruit.gameObject);
+        }
+
+        RemoveRefill(crossList);
+        selectedFruit.ActiveSelectedUI(false);
+        selectedFruit = null;
+        yield return new WaitForSeconds(0.4f);
+
+        if (CheckBoard())
+            StartCoroutine(MatchingBoardRoutine());
     }
 }
 
