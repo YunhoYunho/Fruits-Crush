@@ -76,7 +76,7 @@ public class GameManager : MonoBehaviour
 
     private void ShowCurLevelUI()
     {
-        int level = DataManager.Instance.playerData.myLevel + 1;
+        int level = DataManager.Instance.playerData.selectLevel + 1;
         curLevelText.text = $"Level : {level}";
     }
 
@@ -102,15 +102,23 @@ public class GameManager : MonoBehaviour
         isGameEnded = (goal1Cnt <= 0 && goal2Cnt <= 0);
         if (isGameEnded)
         {
-            Debug.Log("게임 클리어");
-            victoryPanel.SetActive(true);
-            boardController.fruitParent.gameObject.SetActive(false);
-            int level = DataManager.Instance.playerData.myLevel;
-            if (level < DataManager.Instance.playerData.scoreStar.Length - 1)
-                DataManager.Instance.playerData.myLevel = level + 1;
-            DataManager.Instance.playerData.scoreStar[level] = StarCnt(curScore);
+            StartCoroutine(VictoryPanelRoutine());
+
+            int selectedLevel = DataManager.Instance.playerData.selectLevel;
+            if (selectedLevel == DataManager.Instance.playerData.myLevel)
+                if (selectedLevel < DataManager.Instance.playerData.scoreStar.Length - 1)
+                    DataManager.Instance.playerData.myLevel = selectedLevel + 1;
+            if (StarCnt(curScore) > DataManager.Instance.playerData.scoreStar[selectedLevel])
+                DataManager.Instance.playerData.scoreStar[selectedLevel] = StarCnt(curScore);
             DataManager.Instance.SaveData();
         }
+    }
+
+    private IEnumerator VictoryPanelRoutine()
+    {
+        yield return new WaitForSeconds(0.5f);
+        boardController.fruitParent.gameObject.SetActive(false);
+        victoryPanel.SetActive(true);
     }
 
     public void AddScore(int score)

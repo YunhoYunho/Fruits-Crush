@@ -11,8 +11,6 @@ public class LevelController : MonoBehaviour
     private LevelData[] levelData;
     [SerializeField]
     private GameObject stageUI;
-    private int unlockedLevel;
-    private bool isPlaying = false;
 
     private void OnEnable()
     {
@@ -25,13 +23,14 @@ public class LevelController : MonoBehaviour
         foreach (var level in levelData)
             for (int i = 0; i < level.stars.Length; i++)
                 level.stars[i].SetActive(false);
-        isPlaying = true;
     }
 
     private void ShowStageUI()
     {
-        if (isPlaying)
+        if (DataManager.Instance.playerData.scoreStar[0] >= 1)
             stageUI.SetActive(true);
+        else
+            stageUI.SetActive(false);
     }
 
     private void Start()
@@ -43,7 +42,11 @@ public class LevelController : MonoBehaviour
     {
         DataManager.Instance.LoadData();
         for (int i = 0; i < levelData.Length; i++)
+        {
             levelData[i].button.interactable = i <= DataManager.Instance.playerData.myLevel;
+            int levelIdx = i;
+            levelData[i].button.onClick.AddListener(() => SelectGame(levelIdx));
+        }
         UpdateStars();
     }
 
@@ -78,8 +81,10 @@ public class LevelController : MonoBehaviour
         SetButtonActive();
     }
 
-    public void SelectGame()
+    public void SelectGame(int levelIndex)
     {
+        DataManager.Instance.playerData.selectLevel = levelIndex;
+        DataManager.Instance.SaveData();
         SceneManager.LoadScene(1);
     }
 

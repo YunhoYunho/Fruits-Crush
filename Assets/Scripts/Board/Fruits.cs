@@ -23,12 +23,6 @@ public class Fruits : MonoBehaviour
         selectImage = GetComponentInChildren<Image>();
     }
 
-    public Fruits(int xPosition, int yPosition)
-    {
-        xPos = xPosition;
-        yPos = yPosition;
-    }
-
     public void SetPos(int xPosition, int yPosition)
     {
         xPos = xPosition;
@@ -37,6 +31,9 @@ public class Fruits : MonoBehaviour
 
     public void MoveToTarget(Vector2 movePos)
     {
+        if (!gameObject.activeSelf || GameManager.Instance.isGameEnded)
+            return;
+
         StartCoroutine(MoveCoroutine(movePos));
     }
 
@@ -44,10 +41,8 @@ public class Fruits : MonoBehaviour
     {
         isMoving = true;
         float duration = 0.2f;
-
         Vector2 startPos = transform.position;
         float elaspedTime = 0f;
-
         while (elaspedTime < duration)
         {
             float time = elaspedTime / duration;
@@ -83,4 +78,3 @@ public enum FruitType
 
     Size,
 }
-

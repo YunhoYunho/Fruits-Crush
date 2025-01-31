@@ -47,7 +47,8 @@ public class DataManager : MonoBehaviour
         playerData = new PlayerData
         {
             myLevel = 0,
-            scoreStar = new[] { 0, 0, 0, 0, 0, 0 }
+            scoreStar = new[] { 0, 0, 0, 0, 0, 0 },
+            selectLevel = 0
         };
         SaveData();
     }
@@ -58,4 +59,5 @@ public class PlayerData
 {
     public int myLevel;
     public int[] scoreStar = new int[6];
+    public int selectLevel;
 }
