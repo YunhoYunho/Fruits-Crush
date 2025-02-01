@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour
     public FruitType goal1Type;
     public FruitType goal2Type;
 
+    public bool isBombUsed = false;
     private int goal1Cnt;
     private int goal2Cnt;
     private int curScore;
@@ -118,6 +119,7 @@ public class GameManager : MonoBehaviour
     {
         yield return new WaitForSeconds(0.5f);
         boardController.fruitParent.gameObject.SetActive(false);
+        boardController.ReleaseAllFruits();
         victoryPanel.SetActive(true);
     }
 
@@ -141,5 +143,10 @@ public class GameManager : MonoBehaviour
     public void ReturnToMain()
     {
         SceneManager.LoadScene(0);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
     }
 }

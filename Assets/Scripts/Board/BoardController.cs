@@ -5,9 +5,9 @@ using UnityEngine;
 public class BoardController : MonoBehaviour
 {
     [Header("Board")]
-    [SerializeField]
+    [SerializeField, Range(1, 6)]
     private int width = 6;
-    [SerializeField]
+    [SerializeField, Range(3, 8)]
     private int height = 8;
     public GameObject fruitParent;
     public GameObject[] fruitPrefabs;
@@ -27,6 +27,7 @@ public class BoardController : MonoBehaviour
     private Node[,] fruitBoard;
     private List<GameObject> activeFruitList = new List<GameObject>();
     private List<FruitType> typeKindList = new List<FruitType>();
+    private List<Fruits> crossList = new List<Fruits>();
     private int[] goalCntList = new int[2];
 
     private void Awake()
@@ -100,7 +101,6 @@ public class BoardController : MonoBehaviour
         {
             foreach (GameObject go in activeFruitList)
                 PoolManager.Instance.Release(go);
-
             activeFruitList.Clear();
         }
     }
@@ -261,7 +261,6 @@ public class BoardController : MonoBehaviour
                 if (extraConnectedFruits.Count >= 2)
                 {
                     extraConnectedFruits.AddRange(matchResult.matchedFruits);
-
                     return new MatchResult
                     {
                         matchedFruits = extraConnectedFruits,
@@ -287,7 +286,6 @@ public class BoardController : MonoBehaviour
                 if (bonusFruitsList.Count >= 2)
                 {
                     bonusFruitsList.AddRange(matchResult.matchedFruits);
-
                     return new MatchResult
                     {
                         matchedFruits = bonusFruitsList,
@@ -460,7 +458,7 @@ public class BoardController : MonoBehaviour
         if (null == selectedFruit)
             return;
 
-        List<Fruits> crossList = new List<Fruits>();
+        crossList.Clear();
         int xPos = selectedFruit.xPos;
         int yPos = selectedFruit.yPos;
         for (int x = 0; x < width; x++)
@@ -472,6 +470,8 @@ public class BoardController : MonoBehaviour
             crossList.Add(fruitBoard[xPos, y].fruit.gameObject.GetComponent<Fruits>());
         }
         StartCoroutine(CrossCheckRoutine(crossList));
+        selectedFruit.ActiveSelectedUI(false);
+        selectedFruit = null;
     }
 
     private IEnumerator CrossCheckRoutine(List<Fruits> crossList)
@@ -504,12 +504,16 @@ public class BoardController : MonoBehaviour
         }
 
         RemoveRefill(crossList);
-        selectedFruit.ActiveSelectedUI(false);
-        selectedFruit = null;
         yield return new WaitForSeconds(0.4f);
 
         if (CheckBoard())
             StartCoroutine(MatchingBoardRoutine());
+    }
+    
+    public void ReleaseAllFruits()
+    {
+        foreach (Transform tr in fruitParent.transform)
+            PoolManager.Instance.Release(tr.gameObject);
     }
 }
 
