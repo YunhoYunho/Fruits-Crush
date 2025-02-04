@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -12,17 +10,21 @@ public class DataManager : MonoBehaviour
     {
         get
         {
-            if (!instance)
+            if (null == instance)
             {
-                container = new GameObject("DataManager");
-                instance = container.AddComponent<DataManager>();
-                DontDestroyOnLoad(container);
+                instance = FindObjectOfType<DataManager>();
+                if (null == instance)
+                {
+                    container = new GameObject("DataManager");
+                    instance = container.AddComponent<DataManager>();
+                    DontDestroyOnLoad(container);
+                }
             }
             return instance;
         }
     }
 
-    private string GameDataFileName = "GameData.json";
+    private const string GameDataFileName = "GameData.json";
     public PlayerData playerData = new PlayerData();
 
     public void LoadData()

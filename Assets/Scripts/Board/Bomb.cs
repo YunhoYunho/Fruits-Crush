@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,7 +19,7 @@ public class Bomb : MonoBehaviour
         if (GameManager.Instance.isBombUsed)
             return;
 
-        controller.CrossCheck();
+        controller.CheckCrossLine();
         GameManager.Instance.isBombUsed = true;
         bombButton.interactable = false;
     }

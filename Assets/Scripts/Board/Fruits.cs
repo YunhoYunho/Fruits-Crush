@@ -1,16 +1,12 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class Fruits : MonoBehaviour
 {
     public FruitType fruitType;
-
     public int xPos;
     public int yPos;
-
     public bool isMatched;
     public bool isMoving;
 
